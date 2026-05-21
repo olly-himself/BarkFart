@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BarkFart</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0b0b0b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+      gap: 40px;
+      overflow: hidden;
+    }
+
+    .dog-container {
+      position: relative;
+      width: min(480px, 80vw);
+      aspect-ratio: 1;
+    }
+
+    .dog-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.06));
+      transition: filter 0.15s ease;
+    }
+
+    .dog-container img.flash {
+      filter: drop-shadow(0 0 60px rgba(255, 220, 80, 0.5)) brightness(1.1);
+    }
+
+    .controls {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    button {
+      padding: 14px 44px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    #startBtn {
+      background: #e8e8e8;
+      color: #0b0b0b;
+      box-shadow: 0 0 0 0 rgba(232,232,232,0.3);
+    }
+
+    #startBtn:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(232,232,232,0.2);
+    }
+
+    #startBtn:not(:disabled):active { transform: translateY(0); }
+
+    #stopBtn {
+      background: transparent;
+      color: #e8e8e8;
+      border: 2px solid rgba(232,232,232,0.25);
+    }
+
+    #stopBtn:not(:disabled):hover {
+      border-color: rgba(232,232,232,0.6);
+      transform: translateY(-2px);
+    }
+
+    #stopBtn:not(:disabled):active { transform: translateY(0); }
+
+    .status {
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(232,232,232,0.3);
+      height: 1.2em;
+      transition: color 0.3s;
+    }
+
+    .status.active { color: rgba(232,232,232,0.55); }
+
+    .tick-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      margin-right: 8px;
+      vertical-align: middle;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dog-container">
+    <img id="dog" src="dog.png" alt="Dog" />
+  </div>
+
+  <div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="stopBtn" disabled>Stop</button>
+  </div>
+
+  <div class="status" id="status">idle</div>
+
+  <audio id="sfx" src="sfx.mp3" preload="auto"></audio>
+
+  <script>
+    const CHANCE_PER_SECOND = 1 / 100;
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn  = document.getElementById('stopBtn');
+    const status   = document.getElementById('status');
+    const sfx      = document.getElementById('sfx');
+    const dog      = document.getElementById('dog');
+
+    let intervalId = null;
+    let tick = 0;
+
+    function flashDog() {
+      dog.classList.add('flash');
+      setTimeout(() => dog.classList.remove('flash'), 300);
+    }
+
+    function setStatus(text, active = false) {
+      status.innerHTML = active
+        ? `<span class="tick-dot"></span>${text}`
+        : text;
+      status.className = 'status' + (active ? ' active' : '');
+    }
+
+    startBtn.addEventListener('click', () => {
+      tick = 0;
+      startBtn.disabled = true;
+      stopBtn.disabled  = false;
+      setStatus('running', true);
+
+      intervalId = setInterval(() => {
+        tick++;
+        const roll = Math.random();
+        if (roll < CHANCE_PER_SECOND) {
+          sfx.currentTime = 0;
+          sfx.play();
+          flashDog();
+          setStatus(`tick ${tick} — bark!`, true);
+        } else {
+          setStatus(`tick ${tick}`, true);
+        }
+      }, 1000);
+    });
+
+    stopBtn.addEventListener('click', () => {
+      clearInterval(intervalId);
+      intervalId = null;
+      startBtn.disabled = false;
+      stopBtn.disabled  = true;
+      setStatus('stopped');
+    });
+  </script>
+
+</body>
+</html>
