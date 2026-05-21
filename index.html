@@ -280,7 +280,7 @@
 
   <div class="volume-row">
     <span>vol</span>
-    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0" />
     <div class="pw-box" id="pwBox">
       <p>what's the magic word?</p>
       <input type="text" id="pwInput" autocomplete="off" spellcheck="false" />
@@ -419,6 +419,8 @@
       sfx.volume = v;
       volumeSlider.value = v;
     }
+
+    setVolume(0);
 
     volumeSlider.addEventListener('input', () => {
       setVolume(parseFloat(volumeSlider.value));
