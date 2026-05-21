@@ -396,11 +396,17 @@
       setTimeout(() => pwInput.focus(), 50);
     }
 
+    let relockTimer = null;
+
     pwInput.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
       if (pwInput.value.trim().toLowerCase() === 'please') {
         volumeUnlocked = true;
         pwBox.classList.remove('open');
+        clearTimeout(relockTimer);
+        relockTimer = setTimeout(() => {
+          volumeUnlocked = false;
+        }, 10000);
       } else {
         pwInput.classList.remove('wrong');
         void pwInput.offsetWidth;
