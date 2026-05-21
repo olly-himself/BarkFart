@@ -256,6 +256,54 @@
       25%       { transform: translateX(-6px); }
       75%       { transform: translateX(6px); }
     }
+
+    /* angry state */
+    body {
+      transition: background 0.6s ease;
+    }
+
+    body.angry {
+      background: #1a0000;
+    }
+
+    .dog-container img.angry {
+      opacity: 1 !important;
+      filter: sepia(1) saturate(10) hue-rotate(310deg) brightness(0.85);
+      transition: filter 0.4s ease, opacity 0.08s ease-in !important;
+    }
+
+    .hungry-text {
+      display: none;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #ff2222;
+      text-shadow: 0 0 10px #ff0000, 0 0 30px #ff0000, 0 0 60px #ff0000;
+      animation: glow-pulse 0.8s ease-in-out infinite;
+      text-align: center;
+    }
+
+    .hungry-text.visible { display: block; }
+
+    @keyframes glow-pulse {
+      0%, 100% { text-shadow: 0 0 10px #ff2222, 0 0 30px #ff0000, 0 0 60px #ff0000; }
+      50%       { text-shadow: 0 0 20px #ff5555, 0 0 60px #ff2222, 0 0 100px #ff0000; }
+    }
+
+    .cookie-btn {
+      display: none;
+      width: clamp(70px, 15vw, 110px);
+      cursor: pointer;
+      animation: cookie-bounce 0.5s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 12px rgba(255,150,0,0.6));
+    }
+
+    .cookie-btn.visible { display: block; }
+
+    @keyframes cookie-bounce {
+      from { transform: translateY(0) scale(1); }
+      to   { transform: translateY(-10px) scale(1.08); }
+    }
   </style>
 </head>
 <body>
@@ -263,9 +311,13 @@
   <p class="tagline">every second there's a 1/10 chance for bark fart</p>
   <p class="credit">made with love by OLLY</p>
 
+  <p class="hungry-text" id="hungryText">HE IS HUNGRY</p>
+
   <div class="dog-container">
     <img id="dog" src="dog.webp" alt="Dog" />
   </div>
+
+  <img src="cookie.png" alt="Cookie" class="cookie-btn" id="cookieBtn" />
 
   <div class="controls">
     <button id="startBtn">Start</button>
@@ -311,6 +363,8 @@
     let titleTimer1 = null;
     let titleTimer2 = null;
 
+    let isAngry = false;
+
     function flashDog() {
       barkCount.textContent = ++barkTotal;
       setVolume(Math.min(1, parseFloat(volumeSlider.value) + 0.05));
@@ -325,10 +379,12 @@
 
       titleTimer1 = setTimeout(() => { document.title = 'FART'; }, 500);
 
-      fadeTimer = setTimeout(() => {
-        dog.classList.remove('visible');
-        dog.classList.add('fading');
-      }, 400);
+      if (!isAngry) {
+        fadeTimer = setTimeout(() => {
+          dog.classList.remove('visible');
+          dog.classList.add('fading');
+        }, 400);
+      }
 
       titleTimer2 = setTimeout(() => {
         document.title = 'BarkFart';
@@ -450,6 +506,46 @@
     });
 
     let lastUserInput = 0;
+
+    const hungryText = document.getElementById('hungryText');
+    const cookieBtn  = document.getElementById('cookieBtn');
+    let angryBarkInterval = null;
+    let angryTimer = null;
+
+    function scheduleAngry() {
+      clearTimeout(angryTimer);
+      const delay = (4 + Math.random() * 2) * 60 * 1000;
+      angryTimer = setTimeout(startAngry, delay);
+    }
+
+    function startAngry() {
+      isAngry = true;
+      document.body.classList.add('angry');
+      dog.classList.add('angry', 'visible');
+      dog.classList.remove('fading');
+      hungryText.classList.add('visible');
+      cookieBtn.classList.add('visible');
+      angryBarkInterval = setInterval(() => {
+        sfx.currentTime = 0;
+        sfx.play();
+        flashDog();
+      }, 1200);
+    }
+
+    function feedDog() {
+      isAngry = false;
+      document.body.classList.remove('angry');
+      dog.classList.remove('angry', 'visible');
+      dog.classList.add('fading');
+      hungryText.classList.remove('visible');
+      cookieBtn.classList.remove('visible');
+      clearInterval(angryBarkInterval);
+      scheduleAngry();
+    }
+
+    cookieBtn.addEventListener('click', feedDog);
+
+    scheduleAngry();
 
     askBtn.addEventListener('click', () => {
       askBtn.disabled  = true;
