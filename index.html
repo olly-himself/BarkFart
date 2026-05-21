@@ -149,6 +149,17 @@
       color: rgba(232,232,232,0.2);
     }
 
+    .counter {
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      color: rgba(232,232,232,0.3);
+    }
+
+    .counter span {
+      color: #e8e8e8;
+      font-weight: 600;
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.2; }
@@ -265,6 +276,8 @@
 
   <div class="status" id="status">idle</div>
 
+  <p class="counter">You have suffered through <span id="barkCount">0</span> BarkFarts</p>
+
   <div class="volume-row">
     <span>vol</span>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
@@ -288,6 +301,9 @@
     let intervalId = null;
     let tick = 0;
 
+    const barkCount = document.getElementById('barkCount');
+    let barkTotal = 0;
+
     const favicon = document.getElementById('favicon');
     const BLANK_ICON = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
@@ -296,6 +312,7 @@
     let titleTimer2 = null;
 
     function flashDog() {
+      barkCount.textContent = ++barkTotal;
       clearTimeout(fadeTimer);
       clearTimeout(titleTimer1);
       clearTimeout(titleTimer2);
