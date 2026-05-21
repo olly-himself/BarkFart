@@ -178,7 +178,7 @@
       intervalId = setInterval(() => {
         tick++;
         const roll = Math.random();
-        if (roll < CHANCE_PER_SECOND) {
+        if (tick === 1 || roll < CHANCE_PER_SECOND) {
           sfx.currentTime = 0;
           sfx.play();
           flashDog();
