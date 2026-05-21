@@ -96,6 +96,24 @@
 
     #stopBtn:not(:disabled):active { transform: translateY(0); }
 
+    #askBtn {
+      background: transparent;
+      color: rgba(232,232,232,0.5);
+      border: 2px solid rgba(232,232,232,0.15);
+      padding: 10px 28px;
+      font-size: 1.1rem;
+    }
+
+    #askBtn:not(:disabled):hover {
+      border-color: rgba(232,232,232,0.4);
+      color: #e8e8e8;
+      transform: translateY(-2px);
+    }
+
+    #askBtn:not(:disabled):active { transform: translateY(0); }
+
+    #askBtn:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
+
     .status {
       font-size: 0.78rem;
       letter-spacing: 0.12em;
@@ -149,6 +167,8 @@
     <button id="startBtn">Start</button>
     <button id="stopBtn" disabled>Stop</button>
   </div>
+
+  <button id="askBtn">?</button>
 
   <div class="status" id="status">idle</div>
 
@@ -229,6 +249,38 @@
       startBtn.disabled = false;
       stopBtn.disabled  = true;
       setStatus('stopped');
+    });
+
+    const askBtn = document.getElementById('askBtn');
+
+    function triggerOnce(cb) {
+      sfx.currentTime = 0;
+      sfx.play();
+      flashDog();
+      if (cb) setTimeout(cb, 900);
+    }
+
+    askBtn.addEventListener('click', () => {
+      askBtn.disabled  = true;
+      startBtn.disabled = true;
+      setStatus('thinking...', true);
+
+      setTimeout(() => {
+        const twice = Math.random() < 0.5;
+        if (twice) {
+          triggerOnce(() => triggerOnce(() => {
+            askBtn.disabled  = false;
+            startBtn.disabled = !!intervalId;
+            setStatus('idle');
+          }));
+        } else {
+          triggerOnce(() => {
+            askBtn.disabled  = false;
+            startBtn.disabled = !!intervalId;
+            setStatus('idle');
+          });
+        }
+      }, 3000);
     });
   </script>
 
