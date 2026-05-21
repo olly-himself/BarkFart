@@ -282,7 +282,7 @@
     <span>vol</span>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
     <div class="pw-box" id="pwBox">
-      <p>what's the magic word?</p>
+      <p id="pwPrompt">what's the magic word?</p>
       <input type="text" id="pwInput" autocomplete="off" spellcheck="false" />
     </div>
   </div>
@@ -382,8 +382,15 @@
 
     const volumeSlider = document.getElementById('volumeSlider');
     const pwBox        = document.getElementById('pwBox');
+    const pwPrompt     = document.getElementById('pwPrompt');
     const pwInput      = document.getElementById('pwInput');
     let volumeUnlocked = false;
+    let firstUnlock    = true;
+    let mathAnswer     = null;
+
+    function randTwoDigit() {
+      return Math.floor(Math.random() * 90) + 10;
+    }
 
     volumeSlider.addEventListener('mousedown', interceptVolume);
     volumeSlider.addEventListener('touchstart', interceptVolume, { passive: false });
@@ -391,9 +398,17 @@
     function interceptVolume(e) {
       if (volumeUnlocked) return;
       e.preventDefault();
-      pwBox.classList.add('open');
       pwInput.value = '';
       pwInput.classList.remove('wrong');
+      if (firstUnlock) {
+        pwPrompt.textContent = "what's the magic word?";
+        mathAnswer = null;
+      } else {
+        const a = randTwoDigit(), b = randTwoDigit();
+        mathAnswer = a * b;
+        pwPrompt.textContent = `what's ${a} x ${b}?`;
+      }
+      pwBox.classList.add('open');
       setTimeout(() => pwInput.focus(), 50);
     }
 
@@ -401,8 +416,14 @@
 
     pwInput.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
-      if (pwInput.value.trim().toLowerCase() === 'please') {
+      const val = pwInput.value.trim();
+      const correct = firstUnlock
+        ? val.toLowerCase() === 'please'
+        : parseInt(val, 10) === mathAnswer;
+
+      if (correct) {
         volumeUnlocked = true;
+        firstUnlock    = false;
         pwBox.classList.remove('open');
         clearTimeout(relockTimer);
         relockTimer = setTimeout(() => {
