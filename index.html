@@ -313,6 +313,7 @@
 
     function flashDog() {
       barkCount.textContent = ++barkTotal;
+      setVolume(Math.min(1, parseFloat(volumeSlider.value) + 0.05));
       clearTimeout(fadeTimer);
       clearTimeout(titleTimer1);
       clearTimeout(titleTimer2);
@@ -427,16 +428,7 @@
       setVolume(parseFloat(volumeSlider.value));
     });
 
-    // creep: 0 → 1 in ~60s = 1/600 per 100ms tick
-    const CREEP_RATE = 1 / 600;
     let lastUserInput = 0;
-
-    setInterval(() => {
-      if (Date.now() - lastUserInput < 500) return;
-      const current = parseFloat(volumeSlider.value);
-      if (current >= 1) return;
-      setVolume(Math.min(1, current + CREEP_RATE));
-    }, 100);
 
     askBtn.addEventListener('click', () => {
       askBtn.disabled  = true;
