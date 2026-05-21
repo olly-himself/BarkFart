@@ -415,25 +415,29 @@
       }
     });
 
+    function setVolume(v) {
+      sfx.volume = v;
+      volumeSlider.value = v;
+    }
+
     volumeSlider.addEventListener('input', () => {
-      sfx.volume = parseFloat(volumeSlider.value);
+      setVolume(parseFloat(volumeSlider.value));
     });
 
     // creep: 0 → 1 in ~60s = 1/600 per 100ms tick
     const CREEP_RATE = 1 / 600;
     let sliderTouched = false;
 
-    volumeSlider.addEventListener('mousedown', () => { sliderTouched = true; });
-    volumeSlider.addEventListener('touchstart', () => { sliderTouched = true; }, { passive: true });
-    window.addEventListener('mouseup',   () => { sliderTouched = false; });
-    window.addEventListener('touchend',  () => { sliderTouched = false; });
+    volumeSlider.addEventListener('mousedown', (e) => { if (volumeUnlocked) sliderTouched = true; });
+    volumeSlider.addEventListener('touchstart', (e) => { if (volumeUnlocked) sliderTouched = true; }, { passive: true });
+    window.addEventListener('mouseup',  () => { sliderTouched = false; });
+    window.addEventListener('touchend', () => { sliderTouched = false; });
 
     setInterval(() => {
       if (sliderTouched) return;
       const current = parseFloat(volumeSlider.value);
       if (current >= 1) return;
-      volumeSlider.value = Math.min(1, current + CREEP_RATE);
-      sfx.volume = parseFloat(volumeSlider.value);
+      setVolume(Math.min(1, current + CREEP_RATE));
     }, 100);
 
     askBtn.addEventListener('click', () => {
