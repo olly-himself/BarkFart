@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BarkFart</title>
-  <link rel="icon" type="image/webp" href="favicon.webp" />
+  <link rel="icon" id="favicon" type="image/gif" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -159,16 +159,34 @@
     let intervalId = null;
     let tick = 0;
 
+    const favicon = document.getElementById('favicon');
+    const BLANK_ICON = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
     let fadeTimer = null;
+    let titleTimer1 = null;
+    let titleTimer2 = null;
 
     function flashDog() {
       clearTimeout(fadeTimer);
+      clearTimeout(titleTimer1);
+      clearTimeout(titleTimer2);
+
       dog.classList.remove('fading');
       dog.classList.add('visible');
+      favicon.href = 'favicon.webp';
+      document.title = 'BARK';
+
+      titleTimer1 = setTimeout(() => { document.title = 'FART'; }, 500);
+
       fadeTimer = setTimeout(() => {
         dog.classList.remove('visible');
         dog.classList.add('fading');
       }, 400);
+
+      titleTimer2 = setTimeout(() => {
+        document.title = 'BarkFart';
+        favicon.href = BLANK_ICON;
+      }, 1000);
     }
 
     function setStatus(text, active = false) {
