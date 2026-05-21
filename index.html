@@ -161,6 +161,7 @@
       color: rgba(232,232,232,0.45);
       font-size: 0.8rem;
       letter-spacing: 0.06em;
+      position: relative;
     }
 
     #volumeSlider {
@@ -193,46 +194,39 @@
       cursor: pointer;
     }
 
-    /* password modal */
-    .pw-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .pw-overlay.open { display: flex; }
-
     .pw-box {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
       background: #161616;
-      border: 1px solid rgba(232,232,232,0.1);
-      border-radius: 16px;
-      padding: 32px 36px;
-      display: flex;
+      border: 1px solid rgba(232,232,232,0.12);
+      border-radius: 12px;
+      padding: 14px 18px;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      min-width: 280px;
+      gap: 10px;
+      white-space: nowrap;
+      z-index: 10;
     }
 
+    .pw-box.open { display: flex; }
+
     .pw-box p {
-      font-size: 0.95rem;
-      color: rgba(232,232,232,0.7);
+      font-size: 0.8rem;
+      color: rgba(232,232,232,0.55);
       letter-spacing: 0.04em;
     }
 
     .pw-box input {
       background: rgba(232,232,232,0.06);
       border: 1px solid rgba(232,232,232,0.15);
-      border-radius: 8px;
+      border-radius: 6px;
       color: #e8e8e8;
-      font-size: 1rem;
-      padding: 10px 16px;
-      width: 100%;
+      font-size: 0.9rem;
+      padding: 7px 12px;
+      width: 140px;
       outline: none;
       text-align: center;
       letter-spacing: 0.1em;
@@ -274,10 +268,7 @@
   <div class="volume-row">
     <span>vol</span>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
-  </div>
-
-  <div class="pw-overlay" id="pwOverlay">
-    <div class="pw-box">
+    <div class="pw-box" id="pwBox">
       <p>what's the magic word?</p>
       <input type="text" id="pwInput" autocomplete="off" spellcheck="false" />
     </div>
@@ -372,7 +363,7 @@
     }
 
     const volumeSlider = document.getElementById('volumeSlider');
-    const pwOverlay    = document.getElementById('pwOverlay');
+    const pwBox        = document.getElementById('pwBox');
     const pwInput      = document.getElementById('pwInput');
     let volumeUnlocked = false;
 
@@ -382,7 +373,7 @@
     function interceptVolume(e) {
       if (volumeUnlocked) return;
       e.preventDefault();
-      pwOverlay.classList.add('open');
+      pwBox.classList.add('open');
       pwInput.value = '';
       pwInput.classList.remove('wrong');
       setTimeout(() => pwInput.focus(), 50);
@@ -392,7 +383,7 @@
       if (e.key !== 'Enter') return;
       if (pwInput.value.trim().toLowerCase() === 'please') {
         volumeUnlocked = true;
-        pwOverlay.classList.remove('open');
+        pwBox.classList.remove('open');
       } else {
         pwInput.classList.remove('wrong');
         void pwInput.offsetWidth;
