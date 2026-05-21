@@ -153,6 +153,104 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.2; }
     }
+
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(232,232,232,0.45);
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+    }
+
+    #volumeSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 160px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(232,232,232,0.2);
+      outline: none;
+      cursor: pointer;
+    }
+
+    #volumeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e8e8e8;
+      cursor: pointer;
+    }
+
+    #volumeSlider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e8e8e8;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* password modal */
+    .pw-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .pw-overlay.open { display: flex; }
+
+    .pw-box {
+      background: #161616;
+      border: 1px solid rgba(232,232,232,0.1);
+      border-radius: 16px;
+      padding: 32px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      min-width: 280px;
+    }
+
+    .pw-box p {
+      font-size: 0.95rem;
+      color: rgba(232,232,232,0.7);
+      letter-spacing: 0.04em;
+    }
+
+    .pw-box input {
+      background: rgba(232,232,232,0.06);
+      border: 1px solid rgba(232,232,232,0.15);
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 1rem;
+      padding: 10px 16px;
+      width: 100%;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.1em;
+      transition: border-color 0.2s;
+    }
+
+    .pw-box input:focus { border-color: rgba(232,232,232,0.4); }
+
+    .pw-box input.wrong {
+      border-color: rgba(255,80,80,0.6);
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-6px); }
+      75%       { transform: translateX(6px); }
+    }
   </style>
 </head>
 <body>
@@ -172,6 +270,18 @@
   <button id="askBtn">?</button>
 
   <div class="status" id="status">idle</div>
+
+  <div class="volume-row">
+    <span>vol</span>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" />
+  </div>
+
+  <div class="pw-overlay" id="pwOverlay">
+    <div class="pw-box">
+      <p>what's the magic word?</p>
+      <input type="text" id="pwInput" autocomplete="off" spellcheck="false" />
+    </div>
+  </div>
 
   <audio id="sfx" src="sfx.mp3" preload="auto"></audio>
 
@@ -260,6 +370,40 @@
       flashDog();
       if (cb) setTimeout(cb, 900);
     }
+
+    const volumeSlider = document.getElementById('volumeSlider');
+    const pwOverlay    = document.getElementById('pwOverlay');
+    const pwInput      = document.getElementById('pwInput');
+    let volumeUnlocked = false;
+
+    volumeSlider.addEventListener('mousedown', interceptVolume);
+    volumeSlider.addEventListener('touchstart', interceptVolume, { passive: false });
+
+    function interceptVolume(e) {
+      if (volumeUnlocked) return;
+      e.preventDefault();
+      pwOverlay.classList.add('open');
+      pwInput.value = '';
+      pwInput.classList.remove('wrong');
+      setTimeout(() => pwInput.focus(), 50);
+    }
+
+    pwInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      if (pwInput.value.trim().toLowerCase() === 'please') {
+        volumeUnlocked = true;
+        pwOverlay.classList.remove('open');
+      } else {
+        pwInput.classList.remove('wrong');
+        void pwInput.offsetWidth;
+        pwInput.classList.add('wrong');
+        pwInput.value = '';
+      }
+    });
+
+    volumeSlider.addEventListener('input', () => {
+      sfx.volume = parseFloat(volumeSlider.value);
+    });
 
     askBtn.addEventListener('click', () => {
       askBtn.disabled  = true;
