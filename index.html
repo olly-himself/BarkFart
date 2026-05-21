@@ -423,20 +423,16 @@
     setVolume(0);
 
     volumeSlider.addEventListener('input', () => {
+      lastUserInput = Date.now();
       setVolume(parseFloat(volumeSlider.value));
     });
 
     // creep: 0 → 1 in ~60s = 1/600 per 100ms tick
     const CREEP_RATE = 1 / 600;
-    let sliderTouched = false;
-
-    volumeSlider.addEventListener('mousedown', (e) => { if (volumeUnlocked) sliderTouched = true; });
-    volumeSlider.addEventListener('touchstart', (e) => { if (volumeUnlocked) sliderTouched = true; }, { passive: true });
-    window.addEventListener('mouseup',  () => { sliderTouched = false; });
-    window.addEventListener('touchend', () => { sliderTouched = false; });
+    let lastUserInput = 0;
 
     setInterval(() => {
-      if (sliderTouched) return;
+      if (Date.now() - lastUserInput < 500) return;
       const current = parseFloat(volumeSlider.value);
       if (current >= 1) return;
       setVolume(Math.min(1, current + CREEP_RATE));
