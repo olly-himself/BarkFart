@@ -31,12 +31,18 @@
       height: 100%;
       object-fit: contain;
       border-radius: 12px;
-      filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.06));
-      transition: filter 0.15s ease;
+      opacity: 0;
+      transition: opacity 0.08s ease-in;
     }
 
-    .dog-container img.flash {
-      filter: drop-shadow(0 0 60px rgba(255, 220, 80, 0.5)) brightness(1.1);
+    .dog-container img.visible {
+      opacity: 1;
+      transition: opacity 0.08s ease-in;
+    }
+
+    .dog-container img.fading {
+      opacity: 0;
+      transition: opacity 1.2s ease-out;
     }
 
     .controls {
@@ -144,9 +150,16 @@
     let intervalId = null;
     let tick = 0;
 
+    let fadeTimer = null;
+
     function flashDog() {
-      dog.classList.add('flash');
-      setTimeout(() => dog.classList.remove('flash'), 300);
+      clearTimeout(fadeTimer);
+      dog.classList.remove('fading');
+      dog.classList.add('visible');
+      fadeTimer = setTimeout(() => {
+        dog.classList.remove('visible');
+        dog.classList.add('fading');
+      }, 400);
     }
 
     function setStatus(text, active = false) {
