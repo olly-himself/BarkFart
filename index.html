@@ -744,7 +744,15 @@
       scoresRef.child(name).set({ name, score: window._bf.score, timestamp: firebase.database.ServerValue.TIMESTAMP });
     });
 
+    let lastFlex = 0;
     document.getElementById('flexBtn').addEventListener('click', () => {
+      const now = Date.now();
+      if (now - lastFlex < 60000) {
+        const secs = Math.ceil((60000 - (now - lastFlex)) / 1000);
+        alert(`Cooldown! Wait ${secs}s before flexing again.`);
+        return;
+      }
+      lastFlex = now;
       const name = chatName.value.trim() || 'anon';
       db.ref('messages').push({ username: name, text: `${name} is flexing ${window._bf.score} BarkFarts!`, flex: true, timestamp: firebase.database.ServerValue.TIMESTAMP });
     });
