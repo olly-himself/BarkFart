@@ -638,7 +638,7 @@
 
     document.getElementById('flexBtn').addEventListener('click', () => {
       const name = chatName.value.trim() || 'anon';
-      db.ref('messages').push({ username: name, text: `${name} is flexing with ${barkTotal} BarkFarts! 💪`, flex: true, timestamp: firebase.database.ServerValue.TIMESTAMP });
+      db.ref('messages').push({ username: name, text: `${name} is flexing ${barkTotal} BarkFarts!`, flex: true, timestamp: firebase.database.ServerValue.TIMESTAMP });
     });
 
     messagesRef.on('child_added', (snap) => {
