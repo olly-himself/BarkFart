@@ -335,6 +335,96 @@
 
     .cookie-banner button:hover { background: #fff; }
 
+    /* admin panel */
+    .admin-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 16px 20px;
+      width: min(560px, 92vw);
+    }
+
+    .admin-panel.open { display: flex; }
+
+    .admin-title {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(232,232,232,0.3);
+    }
+
+    .admin-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .admin-row input {
+      width: 100px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 0.85rem;
+      padding: 7px 12px;
+      outline: none;
+      text-align: center;
+    }
+
+    .admin-pw-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .admin-pw-overlay.open { display: flex; }
+
+    .admin-pw-box {
+      background: #161616;
+      border: 1px solid rgba(232,232,232,0.12);
+      border-radius: 12px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-pw-box p {
+      font-size: 0.8rem;
+      color: rgba(232,232,232,0.5);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .admin-pw-box input {
+      background: rgba(232,232,232,0.06);
+      border: 1px solid rgba(232,232,232,0.15);
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 1rem;
+      padding: 10px 16px;
+      width: 160px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.2em;
+      transition: border-color 0.2s;
+    }
+
+    .admin-pw-box input:focus { border-color: rgba(232,232,232,0.4); }
+
+    .admin-pw-box input.wrong {
+      border-color: rgba(255,80,80,0.6);
+      animation: shake 0.3s ease;
+    }
+
     /* scoreboard */
     .scoreboard-wrap {
       width: min(560px, 92vw);
@@ -550,6 +640,24 @@
     <div class="pw-box" id="pwBox">
       <p id="pwPrompt">what's the magic word?</p>
       <input type="text" id="pwInput" autocomplete="off" spellcheck="false" />
+    </div>
+  </div>
+
+  <button id="adminBtn" class="score-btn">secret admin panel</button>
+
+  <div class="admin-panel" id="adminPanel">
+    <p class="admin-title">admin panel</p>
+    <div class="admin-row">
+      <input type="number" id="adminAmount" placeholder="amount" min="0" />
+      <button class="score-btn" id="adminSetBtn">Set BarkFarts</button>
+      <button class="score-btn" id="adminAddBtn">Add BarkFarts</button>
+    </div>
+  </div>
+
+  <div class="admin-pw-overlay" id="adminPwOverlay">
+    <div class="admin-pw-box">
+      <p>password</p>
+      <input type="password" id="adminPwInput" autocomplete="off" />
     </div>
   </div>
 
@@ -919,6 +1027,59 @@
     }
 
     cookieBtn.addEventListener('click', feedDog);
+
+    // admin panel
+    const adminBtn       = document.getElementById('adminBtn');
+    const adminPanel     = document.getElementById('adminPanel');
+    const adminPwOverlay = document.getElementById('adminPwOverlay');
+    const adminPwInput   = document.getElementById('adminPwInput');
+    const adminAmount    = document.getElementById('adminAmount');
+    let adminUnlocked    = false;
+
+    adminBtn.addEventListener('click', () => {
+      if (adminUnlocked) {
+        adminPanel.classList.toggle('open');
+        return;
+      }
+      adminPwInput.value = '';
+      adminPwInput.classList.remove('wrong');
+      adminPwOverlay.classList.add('open');
+      setTimeout(() => adminPwInput.focus(), 50);
+    });
+
+    adminPwInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      if (adminPwInput.value === 'v1ctor1a') {
+        adminUnlocked = true;
+        adminPwOverlay.classList.remove('open');
+        adminPanel.classList.add('open');
+      } else {
+        adminPwInput.classList.remove('wrong');
+        void adminPwInput.offsetWidth;
+        adminPwInput.classList.add('wrong');
+        adminPwInput.value = '';
+      }
+    });
+
+    adminPwOverlay.addEventListener('click', (e) => {
+      if (e.target === adminPwOverlay) adminPwOverlay.classList.remove('open');
+    });
+
+    document.getElementById('adminSetBtn').addEventListener('click', () => {
+      const n = parseInt(adminAmount.value, 10);
+      if (isNaN(n) || n < 0) return;
+      barkTotal = n;
+      barkCount.textContent = barkTotal;
+      localStorage.setItem('barkTotal', barkTotal);
+    });
+
+    document.getElementById('adminAddBtn').addEventListener('click', () => {
+      const n = parseInt(adminAmount.value, 10);
+      if (isNaN(n) || n < 0) return;
+      barkTotal += n;
+      barkCount.textContent = barkTotal;
+      localStorage.setItem('barkTotal', barkTotal);
+    });
 
     scheduleAngry();
 
