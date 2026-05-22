@@ -300,6 +300,41 @@
 
     .cookie-btn.visible { display: block; }
 
+    /* cookie banner */
+    .cookie-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #1a1a1a;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.82rem;
+      color: rgba(232,232,232,0.6);
+      z-index: 999;
+    }
+
+    .cookie-banner.hidden { display: none; }
+
+    .cookie-banner button {
+      padding: 6px 18px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      background: #e8e8e8;
+      color: #0b0b0b;
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .cookie-banner button:hover { background: #fff; }
+
     /* chat */
     .chat-wrap {
       width: min(560px, 92vw);
@@ -387,6 +422,11 @@
 </head>
 <body>
 
+  <div class="cookie-banner" id="cookieBanner">
+    <span>🍪 This site uses cookies to enhance your BarkFart experience.</span>
+    <button id="cookieAccept">Accept</button>
+  </div>
+
   <p class="tagline">every second there's a 1/10 chance for bark fart</p>
   <p class="credit">made with love by OLLY</p>
 
@@ -452,6 +492,13 @@
     const chatName = document.getElementById('chatName');
     const chatMsg  = document.getElementById('chatMsg');
     const chatSend = document.getElementById('chatSend');
+
+    const cookieBanner = document.getElementById('cookieBanner');
+    if (localStorage.getItem('cookieAccepted')) cookieBanner.classList.add('hidden');
+    document.getElementById('cookieAccept').addEventListener('click', () => {
+      localStorage.setItem('cookieAccepted', '1');
+      cookieBanner.classList.add('hidden');
+    });
 
     chatName.value = localStorage.getItem('bfName') || '';
 
