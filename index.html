@@ -741,12 +741,12 @@
 
     document.getElementById('submitScoreBtn').addEventListener('click', () => {
       const name = chatName.value.trim() || 'anon';
-      scoresRef.child(name).set({ name, score: barkTotal, timestamp: firebase.database.ServerValue.TIMESTAMP });
+      scoresRef.child(name).set({ name, score: window._bf.score, timestamp: firebase.database.ServerValue.TIMESTAMP });
     });
 
     document.getElementById('flexBtn').addEventListener('click', () => {
       const name = chatName.value.trim() || 'anon';
-      db.ref('messages').push({ username: name, text: `${name} is flexing ${barkTotal} BarkFarts!`, flex: true, timestamp: firebase.database.ServerValue.TIMESTAMP });
+      db.ref('messages').push({ username: name, text: `${name} is flexing ${window._bf.score} BarkFarts!`, flex: true, timestamp: firebase.database.ServerValue.TIMESTAMP });
     });
 
     messagesRef.on('child_added', (snap) => {
@@ -803,7 +803,7 @@
     let triggerReady = false;
     db.ref('triggers').limitToLast(1).on('child_added', () => {
       if (!triggerReady) { triggerReady = true; return; }
-      if (!isAngry) startAngry();
+      window._bf.rage();
     });
 
     function sendChat() {
@@ -823,6 +823,7 @@
   </script>
 
   <script>
+  (function() {
     const CHANCE_PER_SECOND = 1 / 10;
 
     const startBtn = document.getElementById('startBtn');
@@ -835,7 +836,19 @@
     let tick = 0;
 
     const barkCount = document.getElementById('barkCount');
-    let barkTotal = parseInt(localStorage.getItem('barkTotal') || '0', 10);
+
+    function _sig(n) { return ((n * 2654435761 + 1013904223) >>> 0).toString(36); }
+    function _save(n) { localStorage.setItem('_bfx', n + '~' + _sig(n)); }
+    function _load() {
+      try {
+        const v = localStorage.getItem('_bfx') || '';
+        const i = v.lastIndexOf('~');
+        const n = parseInt(v.slice(0, i), 10);
+        return (!isNaN(n) && n >= 0 && _sig(n) === v.slice(i + 1)) ? n : 0;
+      } catch { return 0; }
+    }
+
+    let barkTotal = _load();
     barkCount.textContent = barkTotal;
 
     const favicon = document.getElementById('favicon');
@@ -849,7 +862,7 @@
 
     function flashDog() {
       barkCount.textContent = ++barkTotal;
-      localStorage.setItem('barkTotal', barkTotal);
+      _save(barkTotal);
       setVolume(Math.min(1, parseFloat(volumeSlider.value) + 0.05));
       clearTimeout(fadeTimer);
       clearTimeout(titleTimer1);
@@ -1068,20 +1081,25 @@
     document.getElementById('adminSetBtn').addEventListener('click', () => {
       const n = parseInt(adminAmount.value, 10);
       if (isNaN(n) || n < 0) return;
-      barkTotal = n;
-      barkCount.textContent = barkTotal;
-      localStorage.setItem('barkTotal', barkTotal);
+      window._bf.setScore(n);
     });
 
     document.getElementById('adminAddBtn').addEventListener('click', () => {
       const n = parseInt(adminAmount.value, 10);
       if (isNaN(n) || n < 0) return;
-      barkTotal += n;
-      barkCount.textContent = barkTotal;
-      localStorage.setItem('barkTotal', barkTotal);
+      window._bf.setScore(window._bf.score + n);
     });
 
     scheduleAngry();
+
+    // expose minimal API for Firebase script
+    window._bf = {
+      flash:  () => flashDog(),
+      rage:   () => { if (!isAngry) startAngry(); },
+      get hungry() { return isAngry; },
+      get score()  { return barkTotal; },
+      setScore: (n) => { barkTotal = n; barkCount.textContent = n; _save(n); }
+    };
 
     askBtn.addEventListener('click', () => {
       askBtn.disabled  = true;
@@ -1105,6 +1123,7 @@
         }
       }, 3000);
     });
+  })();
   </script>
 
 </body>
