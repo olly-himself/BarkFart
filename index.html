@@ -373,6 +373,15 @@
       margin-right: 6px;
     }
 
+    .chat-image {
+      display: block;
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+      margin-top: 4px;
+      object-fit: contain;
+    }
+
     .chat-msg .chat-time {
       font-size: 0.68rem;
       color: rgba(232,232,232,0.2);
@@ -507,11 +516,37 @@
       return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function isImageUrl(text) {
+      return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(text.trim());
+    }
+
     messagesRef.on('child_added', (snap) => {
       const { username, text, timestamp } = snap.val();
       const el = document.createElement('div');
       el.className = 'chat-msg';
-      el.innerHTML = `<span class="chat-author">${escapeHtml(username)}:</span>${escapeHtml(text)}<span class="chat-time">${formatTime(timestamp)}</span>`;
+
+      const author = document.createElement('span');
+      author.className = 'chat-author';
+      author.textContent = username + ':';
+
+      const time = document.createElement('span');
+      time.className = 'chat-time';
+      time.textContent = formatTime(timestamp);
+
+      el.appendChild(author);
+
+      if (isImageUrl(text)) {
+        const img = document.createElement('img');
+        img.src = text.trim();
+        img.className = 'chat-image';
+        img.alt = 'image';
+        img.onerror = () => { img.replaceWith(document.createTextNode(' [image failed to load]')); };
+        el.appendChild(img);
+      } else {
+        el.appendChild(document.createTextNode(' ' + text));
+      }
+
+      el.appendChild(time);
       chatLog.appendChild(el);
       chatLog.scrollTop = chatLog.scrollHeight;
     });
