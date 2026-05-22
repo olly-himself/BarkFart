@@ -520,12 +520,24 @@
       return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // skip the first child_added which fires for the most recent existing trigger on load
+    let triggerReady = false;
+    db.ref('triggers').limitToLast(1).on('child_added', () => {
+      if (!triggerReady) { triggerReady = true; return; }
+      sfx.currentTime = 0;
+      sfx.play();
+      flashDog();
+    });
+
     function sendChat() {
       const name = chatName.value.trim() || 'anon';
       const text = chatMsg.value.trim();
       if (!text) return;
       localStorage.setItem('bfName', name);
       db.ref('messages').push({ username: name, text, timestamp: firebase.database.ServerValue.TIMESTAMP });
+      if (/bark/i.test(text)) {
+        db.ref('triggers').push({ timestamp: firebase.database.ServerValue.TIMESTAMP });
+      }
       chatMsg.value = '';
     }
 
