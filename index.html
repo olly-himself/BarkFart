@@ -373,6 +373,12 @@
       margin-right: 6px;
     }
 
+    .chat-bark {
+      color: #ff2222;
+      font-weight: 700;
+      text-shadow: 0 0 8px #ff0000, 0 0 16px #ff0000;
+    }
+
     .chat-image {
       display: block;
       max-width: 100%;
@@ -543,7 +549,17 @@
         img.onerror = () => { img.replaceWith(document.createTextNode(' [image failed to load]')); };
         el.appendChild(img);
       } else {
-        el.appendChild(document.createTextNode(' ' + text));
+        const parts = (' ' + text).split(/(bark)/gi);
+        parts.forEach(part => {
+          if (/^bark$/i.test(part)) {
+            const span = document.createElement('span');
+            span.className = 'chat-bark';
+            span.textContent = part;
+            el.appendChild(span);
+          } else {
+            el.appendChild(document.createTextNode(part));
+          }
+        });
       }
 
       el.appendChild(time);
@@ -559,9 +575,7 @@
     let triggerReady = false;
     db.ref('triggers').limitToLast(1).on('child_added', () => {
       if (!triggerReady) { triggerReady = true; return; }
-      sfx.currentTime = 0;
-      sfx.play();
-      flashDog();
+      if (!isAngry) startAngry();
     });
 
     function sendChat() {
