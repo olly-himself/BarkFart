@@ -300,6 +300,85 @@
 
     .cookie-btn.visible { display: block; }
 
+    /* chat */
+    .chat-wrap {
+      width: min(560px, 92vw);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chat-log {
+      height: 220px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-log::-webkit-scrollbar { width: 4px; }
+    .chat-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+    .chat-msg {
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: rgba(232,232,232,0.75);
+      word-break: break-word;
+    }
+
+    .chat-msg .chat-author {
+      color: #e8e8e8;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    .chat-msg .chat-time {
+      font-size: 0.68rem;
+      color: rgba(232,232,232,0.2);
+      margin-left: 6px;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-row input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input-row input:focus { border-color: rgba(255,255,255,0.3); }
+
+    #chatName { width: 90px; flex-shrink: 0; }
+    #chatMsg  { flex: 1; }
+
+    #chatSend {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      background: rgba(232,232,232,0.1);
+      color: #e8e8e8;
+      border: 1px solid rgba(232,232,232,0.15);
+      flex-shrink: 0;
+    }
+
+    #chatSend:hover { background: rgba(232,232,232,0.18); }
+
     @keyframes cookie-bounce {
       from { transform: translateY(0) scale(1); }
       to   { transform: translateY(-10px) scale(1.08); }
@@ -339,7 +418,73 @@
     </div>
   </div>
 
+  <div class="chat-wrap">
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatName" placeholder="name" maxlength="20" autocomplete="off" />
+      <input type="text" id="chatMsg" placeholder="say something..." maxlength="200" autocomplete="off" />
+      <button id="chatSend">Send</button>
+    </div>
+  </div>
+
   <audio id="sfx" src="sfx.mp3" preload="auto"></audio>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ── PASTE YOUR FIREBASE CONFIG HERE ──────────────────────────────────────
+    const firebaseConfig = {
+      apiKey:            "REPLACE_ME",
+      authDomain:        "REPLACE_ME",
+      databaseURL:       "REPLACE_ME",
+      projectId:         "REPLACE_ME",
+      storageBucket:     "REPLACE_ME",
+      messagingSenderId: "REPLACE_ME",
+      appId:             "REPLACE_ME"
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+    firebase.initializeApp(firebaseConfig);
+    const db          = firebase.database();
+    const messagesRef = db.ref('messages').limitToLast(500);
+
+    const chatLog  = document.getElementById('chatLog');
+    const chatName = document.getElementById('chatName');
+    const chatMsg  = document.getElementById('chatMsg');
+    const chatSend = document.getElementById('chatSend');
+
+    chatName.value = localStorage.getItem('bfName') || '';
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    messagesRef.on('child_added', (snap) => {
+      const { username, text, timestamp } = snap.val();
+      const el = document.createElement('div');
+      el.className = 'chat-msg';
+      el.innerHTML = `<span class="chat-author">${escapeHtml(username)}:</span>${escapeHtml(text)}<span class="chat-time">${formatTime(timestamp)}</span>`;
+      chatLog.appendChild(el);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function sendChat() {
+      const name = chatName.value.trim() || 'anon';
+      const text = chatMsg.value.trim();
+      if (!text) return;
+      localStorage.setItem('bfName', name);
+      db.ref('messages').push({ username: name, text, timestamp: firebase.database.ServerValue.TIMESTAMP });
+      chatMsg.value = '';
+    }
+
+    chatSend.addEventListener('click', sendChat);
+    chatMsg.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+  </script>
 
   <script>
     const CHANCE_PER_SECOND = 1 / 10;
